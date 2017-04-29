@@ -1,6 +1,6 @@
 # nm-hide-unmanaged
 
-This is simple monkey patchig extension that hide all unmanaged devices from gnome status applet.
+This is simple gnome shell extension that hide all unmanaged network devices from gnome status applet (and also example of monkey patching in gnome shell).
 This is very usefull when using a lot of virtual solutions like docker or virtual box, that create many network devices.
 
 To install just place this extension in to `/etc/NetworkManager/NetworkManager.conf` folder and relogin. 
