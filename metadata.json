@@ -3,6 +3,7 @@
     "description": "This extension hides unmanaged devices from Network Manager applet.",
     "name": "Network Manager hide unmanaged",
     "shell-version": [
-        "3.22.3"
+        "3.22.3",
+        "3.32.2"
     ]
 }
