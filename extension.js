@@ -11,7 +11,7 @@ let origDeviceAdded;
 function enable() {
     origDeviceAdded = Network.NMApplet.prototype._deviceAdded;
 
-    let f = function (client, device, skipSyncDeviceNames) {
+    let decoratedFunction = function (client, device, skipSyncDeviceNames) {
         if (device.state === NetworkManager.DeviceState.UNMANAGED) {
             return;
         }
@@ -19,7 +19,7 @@ function enable() {
         origDeviceAdded.call(this, client, device, skipSyncDeviceNames);
     };
 
-    Network.NMApplet.prototype._deviceAdded = f;
+	Network.NMApplet.prototype._deviceAdded = decoratedFunction;
 }
 
 function disable() {
