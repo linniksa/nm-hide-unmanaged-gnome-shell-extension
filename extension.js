@@ -1,11 +1,12 @@
 
-let NetworkManager = imports.gi.NetworkManager;
-if (!NetworkManager || !NetworkManager.DeviceState) {
+let origDeviceAdded;
+let NetworkManager;
+try {
     NetworkManager = imports.gi.NM;
+} catch(e) {
+    NetworkManager = imports.gi.NetworkManager;
 }
 const Network = imports.ui.status.network;
-
-let origDeviceAdded;
 
 
 function enable() {
