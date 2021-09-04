@@ -4,6 +4,7 @@
     "name": "Network Manager hide unmanaged",
     "shell-version": [
         "3.22.3",
-        "3.32.2"
+        "3.32.2",
+        "40"
     ]
 }
