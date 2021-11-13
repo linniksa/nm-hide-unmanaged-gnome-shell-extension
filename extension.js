@@ -17,15 +17,13 @@ const GObject = imports.gi.GObject;
 
 function enable() {
     enabled = true;
+    devices = [];
 
     //Get the instance of the NMApplet class used by the GNOME Panel
     nmApplet = Main.panel.statusArea["aggregateMenu"]._network;
 
     //Back up the original _deviceAdded function
     origDeviceAdded = Network.NMApplet.prototype._deviceAdded;
-
-    //Initialize handler and device arrays
-    devices = [];
 
     let decoratedFunction = function (client, device, skipSyncDeviceNames) {
         //The decorated function somehow still gets called even when the extension is disabled, so we suppress it's behaviour when not enabled
@@ -65,7 +63,6 @@ function disable() {
     }
 
     //Disconnect all our state-changed handlers
-    //Handlers and devices should have same length and the corresponding handler of a device should have the same index as the device
     for (let i=0; i<devices.length; i++) {
         if(devices[i].handlerId) {
             GObject.Object.prototype.disconnect.call(devices[i], devices[i].handlerId);
