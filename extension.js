@@ -1,8 +1,9 @@
 
-let handlers;
+let devices;
 let nmApplet;
 let origDeviceAdded;
 let NetworkManager;
+let enabled;
 try {
     NetworkManager = imports.gi.NM;
 } catch(e) {
@@ -11,29 +12,40 @@ try {
 const Network = imports.ui.status.network;
 const Panel = imports.ui.panel;
 const Main = imports.ui.main;
+const GObject = imports.gi.GObject;
 
 
 function enable() {
-    //Back up the original _deviceAdded function
-    origDeviceAdded = Network.NMApplet.prototype._deviceAdded;
+    enabled = true;
+
     //Get the instance of the NMApplet class used by the GNOME Panel
     nmApplet = Main.panel.statusArea["aggregateMenu"]._network;
-    handlers = {};
+
+    //Back up the original _deviceAdded function
+    origDeviceAdded = Network.NMApplet.prototype._deviceAdded;
+
+    //Initialize handler and device arrays
+    devices = [];
 
     let decoratedFunction = function (client, device, skipSyncDeviceNames) {
-        if(!(device in handlers)) {
-            //If we haven't encountered this device yet, connect to the state changed signal and refresh the devices when a device state changes
-            //Also store the handlerId to remove the handler when extension gets disabled
-            handlers[device] = device.connect("state-changed", function(new_state, old_state, reason) {
-                if(new_state !== old_state) {
-                    nmApplet._readDevices();
-                }
-            });
-        }
+        //The decorated function somehow still gets called even when the extension is disabled, so we suppress it's behaviour when not enabled
+        if(enabled)
+        {
+            if(!(devices.includes(device))) {
+                //If we haven't encountered this device yet, connect to the state changed signal and refresh the devices when a device state changes
+                //Also store the handlerId to remove the handler when extension gets disabled
+                device.handlerId = device.connect("state-changed", function(new_state, old_state, reason) {
+                    if(new_state !== old_state) {
+                        nmApplet._readDevices();
+                    }
+                });
+                devices.push(device);
+            }
 
-        //If the device is unmanaged, don't add it
-        if (device.state === NetworkManager.DeviceState.UNMANAGED) {
-            return;
+            //If the device is unmanaged, don't add it
+            if (device.state === NetworkManager.DeviceState.UNMANAGED) {
+                return;
+            } 
         }
 
         //Add the device
@@ -45,13 +57,18 @@ function enable() {
 }
 
 function disable() {
+    enabled = false;
+
     //Restore the original _deviceAdded function
     if (origDeviceAdded) {
         Network.NMApplet.prototype._deviceAdded = origDeviceAdded;
     }
 
     //Disconnect all our state-changed handlers
-    for (const device in handlers) {
-        device.disconnect(handlers[device]);
+    //Handlers and devices should have same length and the corresponding handler of a device should have the same index as the device
+    for (let i=0; i<devices.length; i++) {
+        if(devices[i].handlerId) {
+            GObject.Object.prototype.disconnect.call(devices[i], devices[i].handlerId);
+        }
     }
 }
